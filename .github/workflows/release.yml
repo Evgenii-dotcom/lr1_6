@@ -24,4 +24,4 @@ jobs:
     - name: Build and publish
       env:
         MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: maturin publish --manifest-path "task 5_H/rust/Cargo.toml"
+      run: maturin publish --manifest-path "task 3_H/pyproject.toml"
