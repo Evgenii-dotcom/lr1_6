@@ -25,4 +25,4 @@ jobs:
     - name: Build and publish
       env:
         MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: maturin publish --release
+      run: maturin publish
