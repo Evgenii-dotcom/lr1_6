@@ -1,13 +1,27 @@
 import socket
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-client.connect(("localhost", 8081))
+class TCPClient:
+    def __init__(self, host: str, port: int):
+        self.host = host
+        self.port = port
 
-client.send("Hello from Python\n".encode())
+    def send_message(self, message: str) -> str:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+            client.connect((self.host, self.port))
 
-response = client.recv(1024).decode()
+            client.sendall((message + "\n").encode())
 
-print("Ответ сервера:", response)
+            response = client.recv(1024).decode()
+            return response
 
-client.close()
+
+def main():
+    client = TCPClient("localhost", 8081)
+
+    response = client.send_message("Hello from Python")
+    print("Ответ сервера:", response)
+
+
+if __name__ == "__main__":
+    main()
