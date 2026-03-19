@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"io"
+	"log"
 	"os"
 )
 
@@ -13,19 +15,30 @@ type Output struct {
 	Sum int `json:"sum"`
 }
 
-func main() {
-
-	var input Input
-
-	json.NewDecoder(os.Stdin).Decode(&input)
-
+func calculateSumOfSquares(numbers []int) int {
 	sum := 0
-
-	for _, n := range input.Numbers {
+	for _, n := range numbers {
 		sum += n * n
 	}
+	return sum
+}
 
-	output := Output{Sum: sum}
+func process(r io.Reader, w io.Writer) error {
+	var input Input
 
-	json.NewEncoder(os.Stdout).Encode(output)
+	if err := json.NewDecoder(r).Decode(&input); err != nil {
+		return err
+	}
+
+	result := Output{
+		Sum: calculateSumOfSquares(input.Numbers),
+	}
+
+	return json.NewEncoder(w).Encode(result)
+}
+
+func main() {
+	if err := process(os.Stdin, os.Stdout); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -1,44 +1,51 @@
 import time
 import subprocess
 import json
+from typing import List
 import fastcalc
 
 
-def python_sum_squares(numbers):
-    return sum(x*x for x in numbers)
+def python_sum_squares(numbers: List[int]) -> int:
+    return sum(x * x for x in numbers)
 
 
-data = list(range(1000000))
-
-# Python test
-start = time.time()
-python_sum_squares(data)
-end = time.time()
-
-print("Python time:", end-start)
+def measure_time(func, *args, **kwargs):
+    start = time.time()
+    result = func(*args, **kwargs)
+    end = time.time()
+    return result, end - start
 
 
-# Rust test
-start = time.time()
-fastcalc.sum_squares(data)
-end = time.time()
+def run_go_sum_squares(numbers: List[int], executable_path: str) -> int:
+    input_data = json.dumps({"numbers": numbers})
+    proc = subprocess.Popen(
+        [executable_path],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    output, error = proc.communicate(input_data.encode())
 
-print("Rust time:", end-start)
+    if proc.returncode != 0:
+        raise RuntimeError(f"Go process failed: {error.decode()}")
+
+    result_json = json.loads(output.decode())
+    return result_json["sum"]
 
 
-# Go test
-proc = subprocess.Popen(
-    ["../go/calculator"],
-    stdin=subprocess.PIPE,
-    stdout=subprocess.PIPE
-)
+def main():
+    data = list(range(1_000_000))
 
-input_data = json.dumps({"numbers": data})
+    _, python_time = measure_time(python_sum_squares, data)
+    print(f"Python time: {python_time:.3f} seconds")
 
-start = time.time()
+    _, rust_time = measure_time(fastcalc.sum_squares, data)
+    print(f"Rust time: {rust_time:.3f} seconds")
 
-output, _ = proc.communicate(input_data.encode())
+    go_path = "../go/calculator"
+    _, go_time = measure_time(run_go_sum_squares, data, go_path)
+    print(f"Go time: {go_time:.3f} seconds")
 
-end = time.time()
 
-print("Go time:", end-start)
+if __name__ == "__main__":
+    main()
